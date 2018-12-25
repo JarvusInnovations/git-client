@@ -17,5 +17,3 @@ Object.setPrototypeOf(module.exports, git);
 
 // expose class prototype
 module.exports.Git = Git;
-module.exports.TreeObject = require('./lib/TreeObject.js');
-module.exports.BlobObject = require('./lib/BlobObject.js');
