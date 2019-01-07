@@ -10,6 +10,7 @@
   "license": "MIT",
   "dependencies": {
     "mz": "^2.7.0",
+    "node-cleanup": "^2.1.2",
     "semver": "^5.5.0"
   },
   "keywords": [
