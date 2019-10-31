@@ -1,6 +1,6 @@
 {
   "name": "git-client",
-  "version": "1.6.2",
+  "version": "1.7.0",
   "description": "Promise-based git client that mostly just executes the git binary",
   "main": "index.js",
   "scripts": {
@@ -9,8 +9,9 @@
   "author": "Chris Alfano <chris@jarv.us>",
   "license": "MIT",
   "dependencies": {
+    "async-exit-hook": "^2.0.1",
     "mz": "^2.7.0",
-    "node-cleanup": "^2.1.2",
+    "rusha": "^0.8.13",
     "semver": "^5.7.0"
   },
   "keywords": [
