@@ -145,3 +145,47 @@ test('stdout and stderr callbacks work together', async t => {
     t.true(output[0].startsWith('out: commit'));
     t.is(errors.length, 0);
 });
+
+test('preserves leading spaces in porcelain status', async t => {
+    // Create a temporary directory
+    const tmpDir = await tmp.dir();
+    const gitDir = path.join(tmpDir.path, '.git');
+
+    try {
+        // Initialize a new git repo
+        await git.init({ $gitDir: gitDir });
+
+        // Create a git instance
+        const testGit = new git.Git({ gitDir });
+
+        // Create and commit a file first
+        const testFile = path.join(tmpDir.path, 'test.txt');
+        await fs.writeFile(testFile, 'initial content');
+        await testGit.add({ $workTree: tmpDir.path }, testFile);
+        await testGit.commit({ $workTree: tmpDir.path }, '-m', 'Initial commit');
+
+        // Modify the file to get a modified status with leading space
+        await fs.writeFile(testFile, 'modified content');
+
+        // Get status with porcelain format using spawn mode (preserves spaces)
+        const spawnStatus = await testGit.status({
+            $workTree: tmpDir.path,
+            porcelain: true,
+            $spawn: true
+        });
+        const rawSpawnOutput = await spawnStatus.captureOutput();
+
+        // Get status with porcelain format using regular mode
+        const regularStatus = await testGit.status({
+            $workTree: tmpDir.path,
+            porcelain: true
+        });
+
+        // Both modes should preserve the leading space in ' M test.txt'
+        t.true(rawSpawnOutput.includes(' M test.txt'));
+        t.true(regularStatus.includes(' M test.txt'));
+
+    } finally {
+        await rmfr(tmpDir.path);
+    }
+});
