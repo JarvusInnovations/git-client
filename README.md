@@ -13,6 +13,7 @@ A lightweight, Promise-based Git client for Node.js that executes the git binary
 - Spawn mode for streaming operations
 - Built-in support for common Git operations
 - Minimal dependencies
+- Full TypeScript support with type definitions
 
 ## Requirements
 
@@ -103,6 +104,16 @@ const hash = await mktree.captureOutputTrimmed(lines.join('\n')+'\n');
 const customGit = new git.Git({ gitDir: '/path/to/repo/.git' });
 const status = await customGit.status();
 ```
+
+## TypeScript Support
+
+The library includes TypeScript definitions for all methods and options. When using TypeScript, you'll get full type checking and autocompletion for:
+
+- Git instance configuration options
+- Command execution options
+- All git commands and their parameters
+- Spawn mode process types
+- Event handlers and callbacks
 
 ## API Reference
 

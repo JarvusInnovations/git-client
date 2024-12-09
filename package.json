@@ -3,6 +3,7 @@
   "version": "1.8.3",
   "description": "Promise-based git client that mostly just executes the git binary",
   "main": "index.js",
+  "types": "index.d.ts",
   "scripts": {
     "test": "ava --no-worker-threads"
   },
@@ -16,7 +17,8 @@
   },
   "keywords": [
     "git",
-    "promise"
+    "promise",
+    "typescript"
   ],
   "repository": "JarvusInnovations/git-client",
   "homepage": "https://github.com/JarvusInnovations/git-client",
