@@ -4,7 +4,7 @@
   "description": "Promise-based git client that mostly just executes the git binary",
   "main": "index.js",
   "scripts": {
-    "test": "ava"
+    "test": "ava --no-worker-threads"
   },
   "author": "Chris Alfano <chris@jarv.us>",
   "license": "MIT",

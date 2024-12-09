@@ -80,7 +80,10 @@ test('checkout git repo to temporary directory', async t => {
         t.true(stats.isFile());
 
         const effectiveWorkTree = await git.revParse({ $workTree: tmpWorkTree.path, 'show-toplevel': true});
-        t.is(await fs.realpath(effectiveWorkTree), tmpWorkTree.path);
+        const realEffectiveWorkTree = await fs.realpath(effectiveWorkTree);
+        const realTmpWorkTreePath = await fs.realpath(tmpWorkTree.path);
+
+        t.is(path.normalize(realEffectiveWorkTree), path.normalize(realTmpWorkTreePath));
 
     } finally {
         await Promise.all([
