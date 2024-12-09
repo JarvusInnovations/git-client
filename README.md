@@ -1,40 +1,76 @@
 # git-client
 
-Promise-based git client that mostly just executes the git binary
+[![Tests](https://github.com/JarvusInnovations/git-client/actions/workflows/test.yml/badge.svg)](https://github.com/JarvusInnovations/git-client/actions/workflows/test.yml)
+[![npm version](https://badge.fury.io/js/git-client.svg)](https://badge.fury.io/js/git-client)
 
-## Usage
+A lightweight, Promise-based Git client for Node.js that executes the git binary. This library provides a clean, Promise-based interface to Git operations while maintaining the full power and flexibility of the git command line.
 
-### Basic usage
+## Features
+
+- Promise-based API for all Git operations
+- Supports all Git commands with automatic method generation
+- Flexible option handling with both short and long format support
+- Spawn mode for streaming operations
+- Built-in support for common Git operations
+- Minimal dependencies
+- Full TypeScript support with type definitions
+
+## Requirements
+
+- Node.js 16.x or higher
+- Git installed and available in PATH
+
+## Installation
+
+```bash
+npm install git-client
+```
+
+## Basic Usage
+
+### Simple Command Execution
 
 ```js
 const git = require('git-client');
-const hash = await git('rev-parse HEAD');
-```
 
-### Multiple arguments
-
-```js
+// Get current commit hash
 const hash = await git('rev-parse', 'HEAD');
 ```
 
-### Option building
+### Using Named Methods
 
 ```js
-const hash = await git('rev-parse', { verify: true, short: 6 }, 'HEAD');
-```
+const git = require('git-client');
 
-### Named methods for common commands
-
-```js
+// Using the revParse method
 const hash = await git.revParse({ verify: true }, 'HEAD');
+
+// Using the status method
+const status = await git.status({ porcelain: true });
 ```
 
-## Advanced Examples
-
-### Save file from the web
+### Working with Options
 
 ```js
-const writer = await git.hashObject({  w: true, stdin: true, $spawn: true });
+// Short format options
+const log = await git('log', { n: 5 });
+
+// Long format options
+const diff = await git('diff', { 'word-diff': true });
+
+// Mixed options with arguments
+const show = await git('show', { format: '%H', 'no-patch': true }, 'HEAD');
+```
+
+## Advanced Usage
+
+### Spawning Processes
+
+Use spawn mode for operations that need streaming or real-time output:
+
+```js
+// Save file from the web
+const writer = await git.hashObject({ w: true, stdin: true, $spawn: true });
 const response = await axios.get('https://placekitten.com/1000/1000', { responseType: 'stream' });
 
 // pipe data from HTTP response into git
@@ -46,11 +82,11 @@ await new Promise((resolve, reject) => {
     response.data.on('error', () => reject());
 });
 
-// read written hash and save to ref
+// read written hash
 const hash = await writer.captureOutputTrimmed();
 ```
 
-### Build a tree
+### Building Trees
 
 ```js
 const lines = [
@@ -59,6 +95,81 @@ const lines = [
 ];
 
 const mktree = await git.mktree({ $spawn: true });
-
 const hash = await mktree.captureOutputTrimmed(lines.join('\n')+'\n');
 ```
+
+### Custom Git Directory
+
+```js
+const customGit = new git.Git({ gitDir: '/path/to/repo/.git' });
+const status = await customGit.status();
+```
+
+## TypeScript Support
+
+The library includes TypeScript definitions for all methods and options. When using TypeScript, you'll get full type checking and autocompletion for:
+
+- Git instance configuration options
+- Command execution options
+- All git commands and their parameters
+- Spawn mode process types
+- Event handlers and callbacks
+
+## API Reference
+
+### Main Function
+
+The default export is a function that executes git commands:
+
+```js
+git(command: string, ...args: Array<string|object>): Promise<string>
+```
+
+### Special Options
+
+When passing options objects, the following special keys are supported:
+
+- `$gitDir`: Set custom git directory
+- `$workTree`: Set custom working tree
+- `$indexFile`: Set custom index file
+- `$spawn`: Enable spawn mode
+- `$shell`: Enable shell mode
+- `$nullOnError`: Return null instead of throwing on error
+- `$onStdout`: Callback for stdout in spawn mode
+- `$onStderr`: Callback for stderr in spawn mode
+
+### Common Methods
+
+All git commands are available as methods. Some commonly used ones include:
+
+- `git.status(options)`
+- `git.add(options, ...files)`
+- `git.commit(options, message)`
+- `git.push(options)`
+- `git.pull(options)`
+- `git.checkout(options, ref)`
+- `git.branch(options)`
+- `git.merge(options, ref)`
+- `git.log(options)`
+
+## Contributing
+
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -am 'Add some amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
+
+### Running Tests
+
+```bash
+npm test
+```
+
+## License
+
+MIT License - see the [LICENSE](LICENSE) file for details.
+
+## Credits
+
+Created and maintained by [Jarvus Innovations](https://github.com/JarvusInnovations).
