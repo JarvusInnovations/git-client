@@ -4,15 +4,15 @@
   "description": "Promise-based git client that mostly just executes the git binary",
   "main": "index.js",
   "scripts": {
-    "test": "ava"
+    "test": "ava --no-worker-threads"
   },
   "author": "Chris Alfano <chris@jarv.us>",
   "license": "MIT",
   "dependencies": {
     "async-exit-hook": "^2.0.1",
     "mz": "^2.7.0",
-    "rusha": "^0.8.13",
-    "semver": "^5.7.0"
+    "rusha": "^0.8.14",
+    "semver": "^7.6.3"
   },
   "keywords": [
     "git",
@@ -21,10 +21,10 @@
   "repository": "JarvusInnovations/git-client",
   "homepage": "https://github.com/JarvusInnovations/git-client",
   "devDependencies": {
-    "ava": "1.0.0-beta.6",
-    "eslint": "^5.16.0",
-    "eslint-plugin-ava": "^4.5.1",
+    "ava": "^6.2.0",
+    "eslint": "^9.16.0",
+    "eslint-plugin-ava": "^15.0.1",
     "rmfr": "^2.0.0",
-    "tmp-promise": "^1.1.0"
+    "tmp-promise": "^3.0.3"
   }
 }
