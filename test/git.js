@@ -98,3 +98,50 @@ test('can read expected master hash', async t => {
 
     t.is(await git.showRef({ hash: true }), masterHash);
 });
+
+test('handles stdout line callback', async t => {
+    const lines = [];
+    const process = await git.log({
+        $onStdout: line => lines.push(line),
+        n: 1
+    });
+
+    await new Promise(resolve => process.on('exit', resolve));
+
+    t.true(lines.length > 0);
+    t.true(lines[0].includes('commit'));
+});
+
+test('handles stderr line callback', async t => {
+    const errors = [];
+    const process = await git.revParse({
+        $onStderr: line => errors.push(line),
+        verify: true
+    }, 'invalid-ref');
+
+    await t.throwsAsync(
+        () => new Promise((resolve, reject) => {
+            process.on('exit', code => code === 0 ? resolve() : reject(new Error(`Exit code: ${code}`)));
+        })
+    );
+
+    t.true(errors.length > 0);
+    t.true(errors[0].includes('fatal'));
+});
+
+test('stdout and stderr callbacks work together', async t => {
+    const output = [];
+    const errors = [];
+
+    const process = await git.log({
+        $onStdout: line => output.push(`out: ${line}`),
+        $onStderr: line => errors.push(`err: ${line}`),
+        n: 1
+    });
+
+    await new Promise(resolve => process.on('exit', resolve));
+
+    t.true(output.length > 0);
+    t.true(output[0].startsWith('out: commit'));
+    t.is(errors.length, 0);
+});
