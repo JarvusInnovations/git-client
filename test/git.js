@@ -106,7 +106,7 @@ test('handles stdout line callback', async t => {
         n: 1
     });
 
-    await new Promise(resolve => process.on('exit', resolve));
+    await new Promise(resolve => process.on('close', resolve));
 
     t.true(lines.length > 0);
     t.true(lines[0].includes('commit'));
@@ -121,7 +121,7 @@ test('handles stderr line callback', async t => {
 
     await t.throwsAsync(
         () => new Promise((resolve, reject) => {
-            process.on('exit', code => code === 0 ? resolve() : reject(new Error(`Exit code: ${code}`)));
+            process.on('close', code => code === 0 ? resolve() : reject(new Error(`Exit code: ${code}`)));
         })
     );
 
@@ -139,7 +139,7 @@ test('stdout and stderr callbacks work together', async t => {
         n: 1
     });
 
-    await new Promise(resolve => process.on('exit', resolve));
+    await new Promise(resolve => process.on('close', resolve));
 
     t.true(output.length > 0);
     t.true(output[0].startsWith('out: commit'));
