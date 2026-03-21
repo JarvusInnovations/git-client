@@ -277,3 +277,175 @@ test('$writeLooseObject is idempotent', async t => {
         await rmfr(tmpDir.path);
     }
 });
+
+
+// $getBlob
+test('$getBlob reads blob content', async t => {
+    const { tmpDir, testGit } = await createTempRepo();
+
+    try {
+        const content = 'hello from getBlob\n';
+        const hash = await testGit.$putBlob(content);
+        const result = await testGit.$getBlob(hash);
+
+        t.is(result, content);
+    } finally {
+        testGit.cleanup();
+        await rmfr(tmpDir.path);
+    }
+});
+
+test('$getBlob returns null for missing object', async t => {
+    const { tmpDir, testGit } = await createTempRepo();
+
+    try {
+        const result = await testGit.$getBlob('0000000000000000000000000000000000000000');
+        t.is(result, null);
+    } finally {
+        testGit.cleanup();
+        await rmfr(tmpDir.path);
+    }
+});
+
+test('$getBlob handles binary content', async t => {
+    const { tmpDir, testGit } = await createTempRepo();
+
+    try {
+        const content = Buffer.from([0x00, 0x01, 0x02, 0xFF, 0xFE]);
+        const hash = await testGit.$putBlob(content);
+
+        // $getBlob returns string, so read via $readObject for binary
+        const result = await testGit.$readObject(hash);
+        t.deepEqual(result.content, content);
+        t.is(result.type, 'blob');
+    } finally {
+        testGit.cleanup();
+        await rmfr(tmpDir.path);
+    }
+});
+
+
+// $getTree
+test('$getTree reads tree entries', async t => {
+    const { tmpDir, testGit } = await createTempRepo();
+
+    try {
+        const blob1 = await testGit.$putBlob('file1\n');
+        const blob2 = await testGit.$putBlob('file2\n');
+
+        const treeHash = await testGit.$putTree([
+            { mode: '100644', type: 'blob', hash: blob1, name: 'alpha.txt' },
+            { mode: '100644', type: 'blob', hash: blob2, name: 'beta.txt' }
+        ]);
+
+        const entries = await testGit.$getTree(treeHash);
+
+        t.is(entries.length, 2);
+        t.is(entries[0].name, 'alpha.txt');
+        t.is(entries[0].hash, blob1);
+        t.is(entries[0].mode, '100644');
+        t.is(entries[0].type, 'blob');
+        t.is(entries[1].name, 'beta.txt');
+    } finally {
+        testGit.cleanup();
+        await rmfr(tmpDir.path);
+    }
+});
+
+test('$getTree handles mixed types and normalizes modes', async t => {
+    const { tmpDir, testGit } = await createTempRepo();
+
+    try {
+        const blob = await testGit.$putBlob('content\n');
+        const subTree = await testGit.$putTree([
+            { mode: '100644', type: 'blob', hash: blob, name: 'nested.txt' }
+        ]);
+
+        const treeHash = await testGit.$putTree([
+            { mode: '100644', type: 'blob', hash: blob, name: 'file.txt' },
+            { mode: '040000', type: 'tree', hash: subTree, name: 'subdir' }
+        ]);
+
+        const entries = await testGit.$getTree(treeHash);
+        const treeEntry = entries.find(e => e.name === 'subdir');
+
+        t.is(treeEntry.type, 'tree');
+        t.is(treeEntry.mode, '040000');
+        t.is(treeEntry.hash, subTree);
+    } finally {
+        testGit.cleanup();
+        await rmfr(tmpDir.path);
+    }
+});
+
+test('$getTree populates known-objects cache', async t => {
+    const { tmpDir, testGit } = await createTempRepo();
+
+    try {
+        const blob = await testGit.$putBlob('cached\n');
+        const treeHash = await testGit.$putTree([
+            { mode: '100644', type: 'blob', hash: blob, name: 'file.txt' }
+        ]);
+
+        // clear cache to test that $getTree repopulates it
+        testGit._knownObjects.clear();
+        t.false(testGit.$isKnownObject(blob));
+
+        await testGit.$getTree(treeHash);
+        t.true(testGit.$isKnownObject(blob));
+        t.true(testGit.$isKnownObject(treeHash));
+    } finally {
+        testGit.cleanup();
+        await rmfr(tmpDir.path);
+    }
+});
+
+test('$getTree returns null for missing object', async t => {
+    const { tmpDir, testGit } = await createTempRepo();
+
+    try {
+        const result = await testGit.$getTree('0000000000000000000000000000000000000000');
+        t.is(result, null);
+    } finally {
+        testGit.cleanup();
+        await rmfr(tmpDir.path);
+    }
+});
+
+
+// $objectExists
+test('$objectExists returns type for existing object', async t => {
+    const { tmpDir, testGit } = await createTempRepo();
+
+    try {
+        const hash = await testGit.$putBlob('exists\n');
+        // clear cache to force actual check
+        testGit._knownObjects.clear();
+        const result = await testGit.$objectExists(hash);
+
+        t.is(result, 'blob');
+    } finally {
+        testGit.cleanup();
+        await rmfr(tmpDir.path);
+    }
+});
+
+test('$objectExists returns null for missing object', async t => {
+    const { tmpDir, testGit } = await createTempRepo();
+
+    try {
+        const result = await testGit.$objectExists('0000000000000000000000000000000000000000');
+        t.is(result, null);
+    } finally {
+        testGit.cleanup();
+        await rmfr(tmpDir.path);
+    }
+});
+
+test('$objectExists returns true for cached object', async t => {
+    const testGit = new git.Git({ gitDir: '/dev/null' });
+
+    testGit.$knowObject('abc123');
+    const result = await testGit.$objectExists('abc123');
+    t.true(result);
+});
