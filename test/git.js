@@ -69,6 +69,33 @@ test('other git executes with correct git dir with override', async t => {
     t.is(await fs.realpath(gitDir), repo1Dir);
 });
 
+test('$config injects -c <key>=<value> before subcommand', async t => {
+    // Read back a config value that only exists via $config injection
+    const value = await git.config(
+        { $config: { 'holo.injected': 'yes' } },
+        '--get',
+        'holo.injected',
+    );
+
+    t.is(value, 'yes');
+});
+
+test('$config supports multiple entries', async t => {
+    const first = await git.config(
+        { $config: { 'holo.first': '1', 'holo.second': '2' } },
+        '--get',
+        'holo.first',
+    );
+    const second = await git.config(
+        { $config: { 'holo.first': '1', 'holo.second': '2' } },
+        '--get',
+        'holo.second',
+    );
+
+    t.is(first, '1');
+    t.is(second, '2');
+});
+
 test('checkout git repo to temporary directory', async t => {
     const [tmpWorkTree, tmpIndexFilePath] = await Promise.all([tmp.dir(), tmp.tmpName()]);
 

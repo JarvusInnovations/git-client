@@ -137,6 +137,8 @@ When passing options objects, the following special keys are supported:
 - `$nullOnError`: Return null instead of throwing on error
 - `$onStdout`: Callback for stdout in spawn mode
 - `$onStderr`: Callback for stderr in spawn mode
+- `$env`: Object of environment variables to set on the spawned process
+- `$config`: Object of `key=value` config overrides injected as `-c` flags before the subcommand (e.g. `{ $config: { 'gc.auto': '0' } }`)
 
 ### Common Methods
 
