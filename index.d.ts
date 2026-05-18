@@ -33,6 +33,8 @@ declare module 'git-client' {
     $cwd?: string;
     /** Custom environment variables */
     $env?: Record<string, string>;
+    /** Inject `-c key=value` config overrides before the subcommand */
+    $config?: Record<string, string>;
     /** Additional options */
     $options?: Record<string, any>;
     /** Any git command options */
